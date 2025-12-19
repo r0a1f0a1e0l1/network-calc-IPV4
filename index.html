@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Calculadora IP">
+    <title>Calculadora IP Pro</title>
+    
+    <link rel="manifest" href="manifest.json">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --accent: #f59e0b;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding-bottom: 40px;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 30px 20px 50px;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            text-align: center;
+        }
+
+        .app-header h1 { margin: 0; font-size: 1.5rem; font-weight: 800; }
+        .app-header p { margin: 5px 0 0; opacity: 0.9; font-size: 0.85rem; }
+
+        .container {
+            padding: 0 12px;
+            margin-top: -35px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 18px;
+            box-shadow: var(--shadow);
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .label {
+            display: block;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            letter-spacing: 0.8px;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px 8px;
+            font-size: 1rem; 
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            background: #fdfdfd;
+            appearance: none;
+        }
+
+        .highlight-input { border-color: var(--accent) !important; background-color: #fffbeb !important; }
+
+        .cidr-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .cidr-chip {
+            background: #f1f5f9;
+            padding: 8px 4px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.2s;
+        }
+
+        .cidr-chip.active { background: var(--primary); color: white; transform: scale(1.05); }
+
+        .result-item {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-left: 5px solid var(--primary);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+
+        .res-ip { font-family: monospace; font-weight: 800; font-size: 1.1rem; margin-bottom: 8px; display: block; color: var(--primary-dark); }
+        .res-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+        .res-detail { 
+            font-size: 0.75rem; 
+            color: var(--text-muted);
+            background: #f8fafc;
+            padding: 6px;
+            border-radius: 6px;
+        }
+        
+        .res-detail strong { display: block; color: #475569; font-size: 0.6rem; text-transform: uppercase; margin-bottom: 2px; }
+
+        .network-highlight {
+            background-color: #ecfdf5;
+            border-left-color: #10b981;
+            border-left-width: 8px;
+        }
+
+        .section-title {
+            margin: 20px 0 10px;
+            padding-left: 5px;
+            border-left: 3px solid var(--accent);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="app-header">
+        <h1>Calculadora IP</h1>
+        <p>Análise de Sub-redes IPv4</p>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-bottom: 15px;">
+                <div>
+                    <label class="label">Classe</label>
+                    <select id="classSelect">
+                        <option value="A">Classe A</option>
+                        <option value="B">Classe B</option>
+                        <option value="C" selected>Classe C</option>
+                        <option value="Other">Outra</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="label">Endereço IP</label>
+                    <input type="text" id="ipInput" value="192.168.0.75" inputmode="decimal">
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label class="label">Máscara Sub-rede (Decimal)</label>
+                <input type="text" id="maskInput" value="255.255.255.224" class="highlight-input">
+            </div>
+
+            <label class="label">Atalho CIDR</label>
+            <div class="cidr-grid" id="cidrGrid"></div>
+        </div>
+
+        <div id="resultsArea" style="display: none;">
+            <div class="section-title"><span class="label">Rede Detectada</span></div>
+            <div id="mainResult"></div>
+            
+            <div class="section-title"><span class="label">Lista de Sub-redes</span></div>
+            <div id="subnetList"></div>
+        </div>
+    </div>
+
+<script>
+    let selectedCidr = 27; 
+    const ipInput = document.getElementById('ipInput');
+    const maskInput = document.getElementById('maskInput');
+    const classSelect = document.getElementById('classSelect');
+
+    const classPresets = {
+        'A': { ip: '10.0.0.0', cidr: 8 },
+        'B': { ip: '172.16.0.0', cidr: 16 },
+        'C': { ip: '192.168.0.0', cidr: 24 }
+    };
+
+    // --- FUNÇÕES DE CONVERSÃO ---
+    function ipToLong(ip) { 
+        return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0; 
+    }
+
+    function longToIp(long) { 
+        return [(long >>> 24) & 0xFF, (long >>> 16) & 0xFF, (long >>> 8) & 0xFF, long & 0xFF].join('.'); 
+    }
+    
+    function maskToCidr(mask) {
+        const long = ipToLong(mask);
+        let count = 0;
+        for (let i = 31; i >= 0; i--) { if ((long >>> i) & 1) count++; else break; }
+        return count;
+    }
+
+    function cidrToMask(cidr) { 
+        return longToIp((0xFFFFFFFF << (32 - cidr)) >>> 0); 
+    }
+
+    // --- LÓGICA DE INTERAÇÃO ---
+    function syncClassFromIp(ip) {
+        const first = parseInt(ip.split('.')[0]);
+        let detected = "Other";
+        if (first >= 1 && first <= 126) detected = "A";
+        else if (first >= 128 && first <= 191) detected = "B";
+        else if (first >= 192 && first <= 223) detected = "C";
+        classSelect.value = detected;
+    }
+
+    classSelect.addEventListener('change', (e) => {
+        const preset = classPresets[e.target.value];
+        if (preset) {
+            ipInput.value = preset.ip;
+            updateFromCidr(preset.cidr);
+        }
+    });
+
+    function updateFromCidr(newCidr) {
+        selectedCidr = newCidr;
+        maskInput.value = cidrToMask(newCidr);
+        refreshCidrChips();
+        calculate();
+    }
+
+    function refreshCidrChips() {
+        document.querySelectorAll('.cidr-chip').forEach(c => {
+            c.classList.toggle('active', parseInt(c.textContent.replace('/','')) === selectedCidr);
+        });
+    }
+
+    // Gerar botões CIDR (/1 a /32)
+    const grid = document.getElementById('cidrGrid');
+    for (let i = 1; i <= 32; i++) {
+        const chip = document.createElement('div');
+        chip.className = 'cidr-chip' + (i === 27 ? ' active' : '');
+        chip.textContent = '/' + i;
+        chip.onclick = () => updateFromCidr(i);
+        grid.appendChild(chip);
+    }
+
+    ipInput.addEventListener('input', () => {
+        syncClassFromIp(ipInput.value);
+        calculate();
+    });
+
+    maskInput.addEventListener('input', () => {
+        const cidr = maskToCidr(maskInput.value);
+        if (cidr > 0 || maskInput.value === "255.255.255.255" || maskInput.value === "0.0.0.0") {
+            selectedCidr = cidr;
+            refreshCidrChips();
+            calculate();
+        }
+    });
+
+    // --- MOTOR DE CÁLCULO ---
+    function calculate() {
+        const ipText = ipInput.value.trim();
+        const ipv4Regex = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
+
+        if (!ipv4Regex.test(ipText)) {
+            document.getElementById('resultsArea').style.display = 'none';
+            return;
+        }
+
+        document.getElementById('resultsArea').style.display = 'block';
+
+        const ipLong = ipToLong(ipText);
+        const netmaskLong = (selectedCidr === 0) ? 0 : (0xFFFFFFFF << (32 - selectedCidr)) >>> 0;
+        const networkLong = (ipLong & netmaskLong) >>> 0;
+        const totalIPs = Math.pow(2, 32 - selectedCidr);
+
+        // Renderizar Card Principal
+        document.getElementById('mainResult').innerHTML = renderSubnetCard(networkLong, selectedCidr, true);
+
+        // Renderizar Lista de Sub-redes Adjacentes
+        const listContainer = document.getElementById('subnetList');
+        listContainer.innerHTML = '';
+        
+        let startIP;
+        let iterations;
+
+        // Lógica para não travar o navegador em redes gigantes
+        if (selectedCidr >= 24) {
+            startIP = (ipLong & 0xFFFFFF00) >>> 0; 
+            iterations = 256 / totalIPs;
+        } else if (selectedCidr >= 16) {
+            startIP = (ipLong & 0xFFFF0000) >>> 0;
+            iterations = Math.min(32, 65536 / totalIPs);
+        } else {
+            startIP = networkLong;
+            iterations = 10; 
+        }
+
+        for (let i = 0; i < iterations; i++) {
+            let currentNet = (startIP + (i * totalIPs)) >>> 0;
+            if (currentNet === networkLong) continue; 
+            listContainer.innerHTML += renderSubnetCard(currentNet, selectedCidr, false);
+        }
+    }
+
+    function renderSubnetCard(netLong, cidr, isMain) {
+        const total = Math.pow(2, 32 - cidr);
+        const useful = (cidr >= 31) ? (cidr === 32 ? 1 : 2) : total - 2;
+        const broadcast = (netLong + total - 1) >>> 0;
+
+        return `
+            <div class="result-item ${isMain ? 'network-highlight' : ''}">
+                <span class="label" style="color:${isMain ? '#059669' : '#64748b'}">${isMain ? 'Endereço de Rede' : 'Sub-rede Disponível'}</span>
+                <span class="res-ip">${longToIp(netLong)} /${cidr}</span>
+                <div class="res-grid">
+                    <div class="res-detail"><strong>Primeiro Útil</strong>${cidr <= 30 ? longToIp(netLong + 1) : longToIp(netLong)}</div>
+                    <div class="res-detail"><strong>Último Útil</strong>${cidr <= 30 ? longToIp(broadcast - 1) : longToIp(broadcast)}</div>
+                    <div class="res-detail"><strong>Broadcast</strong>${longToIp(broadcast)}</div>
+                    <div class="res-detail"><strong>Capacidade</strong>${useful.toLocaleString()} hosts</div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Registro do Service Worker para PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log(err));
+        });
+    }
+
+    calculate();
+</script>
+</body>
+</html>
