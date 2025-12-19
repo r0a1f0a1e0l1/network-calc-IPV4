@@ -2,7 +2,9 @@ const CACHE_NAME = 'calcip-v1';
 const ASSETS = [
   './',
   './index.html',
-  './manifest.json'
+  './manifest.json',
+  './favicon.png',
+  './favicon.ico'
 ];
 
 self.addEventListener('install', (e) => {
